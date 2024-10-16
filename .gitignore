@@ -1,0 +1,16 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Visual Studio Code settings
+.vscode/
+
+# Custom folders
+extra/
+LunarLander/
+wandb/
+
+# General system files to ignore
+.DS_Store
+Thumbs.db
