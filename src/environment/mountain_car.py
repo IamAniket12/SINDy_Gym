@@ -18,7 +18,6 @@ import math
 
 
 class Continuous_MountainCarEnv(gym.Env):
-    
 
     metadata = {
         "render_modes": ["human", "rgb_array"],
@@ -26,7 +25,7 @@ class Continuous_MountainCarEnv(gym.Env):
     }
 
     def __init__(self, render_mode: Optional[str] = None, goal_velocity=0):
-        self.dt=1
+        self.dt = 1
         self.min_action = -1.0
         self.max_action = 1.0
         self.min_position = -1.2
@@ -96,11 +95,10 @@ class Continuous_MountainCarEnv(gym.Env):
         return self.state, reward, terminated, False, {}
 
     def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
-        #super().reset(seed=seed)
+        # super().reset(seed=seed)
         # Note that if you use custom reset bounds, it may lead to out-of-bound
         # state/observations.
         self.state = np.array([np.random.uniform(low=-0.6, high=-0.4), 0])
-        
 
         if self.render_mode == "human":
             self.render()
@@ -219,16 +217,15 @@ class Continuous_MountainCarEnv(gym.Env):
             pygame.display.quit()
             pygame.quit()
             self.isopen = False
-            
-            
-            
+
+
 class Continuous_MountainCarEnvWB(gym.Env):
 
     metadata = {"render.modes": ["human", "rgb_array"], "video.frames_per_second": 30}
 
-    def __init__(self, sindy_model, goal_velocity=0,render_mode: Optional[str] = None):
+    def __init__(self, sindy_model, goal_velocity=0, render_mode: Optional[str] = None):
         print("using custom mountain car")
-        self.dt=1
+        self.dt = 1
         self.min_action = -1.0
         self.max_action = 1.0
         self.min_position = -1.2
@@ -249,7 +246,7 @@ class Continuous_MountainCarEnvWB(gym.Env):
 
         self.screen = None
         self.isopen = True
-        self.render_mode=render_mode
+        self.render_mode = render_mode
         self.action_space = spaces.Box(
             low=self.min_action, high=self.max_action, shape=(1,), dtype=np.float32
         )
@@ -266,7 +263,7 @@ class Continuous_MountainCarEnvWB(gym.Env):
         velocity = self.state[1]
         force = min(max(action[0], self.min_action), self.max_action)
 
-        if (type(self.curr_obs) == int):
+        if type(self.curr_obs) == int:
             velocity += force * self.power - 0.0025 * math.cos(3 * position)
             if velocity > self.max_speed:
                 velocity = self.max_speed
@@ -280,8 +277,10 @@ class Continuous_MountainCarEnvWB(gym.Env):
             if position == self.min_position and velocity < 0:
                 velocity = 0
         else:
-            #sindy_input = np.array([[*self.curr_obs, *action]])
-            sindy_output = self.sindy_model.predict(np.array([self.state]),np.array([force]))
+            # sindy_input = np.array([[*self.curr_obs, *action]])
+            sindy_output = self.sindy_model.predict(
+                np.array([self.state]), np.array([force])
+            )
             position = sindy_output[0][0]
             velocity = sindy_output[0][1]
             if velocity > self.max_speed:
@@ -316,9 +315,9 @@ class Continuous_MountainCarEnvWB(gym.Env):
         *,
         seed: Optional[int] = None,
         return_info: bool = False,
-        options: Optional[dict] = None
+        options: Optional[dict] = None,
     ):
-        #super().reset(seed=seed)
+        # super().reset(seed=seed)
         self.state = np.array([np.random.uniform(low=-0.6, high=-0.4), 0])
         self.curr_obs = np.array(self.state, dtype=np.float32)
         if self.render_mode == "human":
@@ -327,7 +326,6 @@ class Continuous_MountainCarEnvWB(gym.Env):
             return np.array(self.state, dtype=np.float32)
         else:
             return np.array(self.state, dtype=np.float32), {}
-
 
     def _height(self, xs):
         return np.sin(3 * xs) * 0.45 + 0.55
@@ -418,9 +416,7 @@ class Continuous_MountainCarEnvWB(gym.Env):
             self.isopen = False
 
 
-
 class Continuous_MountainCarEnv_Sindy(gym.Env):
-       
 
     metadata = {
         "render_modes": ["human", "rgb_array"],
@@ -428,7 +424,7 @@ class Continuous_MountainCarEnv_Sindy(gym.Env):
     }
 
     def __init__(self, sindy_model, render_mode: Optional[str] = None, goal_velocity=0):
-        self.dt=1
+        self.dt = 1
         self.min_action = -1.0
         self.max_action = 1.0
         self.min_position = -1.2
@@ -462,7 +458,7 @@ class Continuous_MountainCarEnv_Sindy(gym.Env):
             low=self.low_state, high=self.high_state, dtype=np.float32
         )
         self.sindy_model = sindy_model
-        self.curr_obs=self.reset()
+        self.curr_obs = self.reset()
         self.n_input = len(self.curr_obs)
 
     def step(self, action: np.ndarray):
@@ -471,8 +467,7 @@ class Continuous_MountainCarEnv_Sindy(gym.Env):
         velocity = self.state[1]
         force = min(max(action[0], self.min_action), self.max_action)
 
-
-        if (type(self.curr_obs) == int):
+        if type(self.curr_obs) == int:
             velocity += force * self.power - 0.0025 * math.cos(3 * position)
             if velocity > self.max_speed:
                 velocity = self.max_speed
@@ -486,8 +481,10 @@ class Continuous_MountainCarEnv_Sindy(gym.Env):
             if position == self.min_position and velocity < 0:
                 velocity = 0
         else:
-            prediction = self.sindy_model.predict(np.array([self.state]),np.array([force]))
-       
+            prediction = self.sindy_model.predict(
+                np.array([self.state]), np.array([force])
+            )
+
             velocity = prediction[0][1]
             # position = prediction[0][0]
             # velocity += force * self.power - 0.0025 * math.cos(3 * position)
@@ -520,11 +517,11 @@ class Continuous_MountainCarEnv_Sindy(gym.Env):
         return self.state, reward, terminated, False, {}
 
     def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
-        #super().reset(seed=seed)
+        # super().reset(seed=seed)
         # Note that if you use custom reset bounds, it may lead to out-of-bound
         # state/observations.
         self.state = np.array([np.random.uniform(low=-0.6, high=-0.4), 0])
-        self.curr_obs = np.array(self.state,dtype=np.float32)
+        self.curr_obs = np.array(self.state, dtype=np.float32)
 
         if self.render_mode == "human":
             self.render()
@@ -643,22 +640,22 @@ class Continuous_MountainCarEnv_Sindy(gym.Env):
             pygame.display.quit()
             pygame.quit()
             self.isopen = False
-            
-   
+
+
 register(
-    id='MountainCarBB-v0',
-    entry_point='src.environment.custom_gym_envs:Continuous_MountainCarEnv',
-    max_episode_steps = 1000
+    id="MountainCarBB-v0",
+    entry_point="src.environment.moutaoin_car:Continuous_MountainCarEnv",
+    max_episode_steps=1000,
 )
 
 register(
-    id='MountainCarWB-v0',
-    entry_point='src.environment.custom_gym_envs:Continuous_MountainCarEnvWB',
-    max_episode_steps = 1000
+    id="MountainCarWB-v0",
+    entry_point="src.environment.mountain_car:Continuous_MountainCarEnvWB",
+    max_episode_steps=1000,
 )
 
 register(
-    id='MountainCar_Sindy-v0',
-    entry_point='src.environment.custom_gym_envs:Continuous_MountainCarEnv_Sindy',
-    max_episode_steps = 1000
+    id="MountainCar_Sindy-v0",
+    entry_point="src.environment.mountain_car:Continuous_MountainCarEnv_Sindy",
+    max_episode_steps=1000,
 )
