@@ -8,7 +8,7 @@ __pycache__/
 
 # Custom folders
 extra/
-LunarLander/
+LunarLander_old/
 wandb/
 
 # General system files to ignore
