@@ -9,7 +9,7 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 )
 # Now you can import from src.environment.custom_gym_envs
-from src.environment.custom_gym_envs import (
+from environment.mountain_car import (
     Continuous_MountainCarEnv,
     Continuous_MountainCarEnvWB,
     Continuous_MountainCarEnv_Sindy,
@@ -57,6 +57,6 @@ def run_trained_model(env_name, model_path, render_mode="human"):
 
 if __name__ == "__main__":
     env_name = "MountainCarBB-v0"  # Example environment
-    model_path = "results/models/sac_mountaincar_core.zip"
+    model_path = "results/models/mountain_car/sac_mountaincar_core.zip"
 
     run_trained_model(env_name, model_path)

@@ -9,7 +9,7 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 )
 
-from src.environment.custom_gym_envs import (
+from environment.mountain_car import (
     Continuous_MountainCarEnv,
     Continuous_MountainCarEnvWB,
     Continuous_MountainCarEnv_Sindy,
@@ -68,6 +68,6 @@ def run_sindy_trained_model(
 
 if __name__ == "__main__":
     file_path = "src/data/mountaincar/mountain_car_data.csv"
-    model_path = "results/models/sac_mountaincar_sindy_v1.zip"
+    model_path = "results/models/mountain_car/sac_mountaincar_sindy_v1.zip"
 
     run_sindy_trained_model(file_path, model_path)

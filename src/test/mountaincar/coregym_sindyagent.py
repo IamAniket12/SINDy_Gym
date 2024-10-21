@@ -4,7 +4,7 @@ import gym
 from stable_baselines3 import SAC
 from pysindy.feature_library import *
 from pysindy.differentiation import *
-from src.environment.custom_gym_envs import (
+from environment.mountain_car import (
     Continuous_MountainCarEnv,
     Continuous_MountainCarEnvWB,
     Continuous_MountainCarEnv_Sindy,
@@ -67,6 +67,6 @@ def run_trained_model_with_sindy(
 
 if __name__ == "__main__":
     file_path = "src/data/mountaincar/mountain_car_data.csv"
-    model_path = "results/models/sac_mountaincar_sindy_v1.zip"
+    model_path = "results/models/mountain_car/sac_mountaincar_sindy_v1.zip"
 
     run_trained_model_with_sindy(file_path, model_path)

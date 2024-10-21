@@ -7,7 +7,7 @@ from stable_baselines3 import SAC
 from stable_baselines3.common.callbacks import BaseCallback
 from wandb.integration.sb3 import WandbCallback
 from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
-from src.environment.custom_gym_envs import (
+from environment.mountain_car import (
     Continuous_MountainCarEnv,
     Continuous_MountainCarEnvWB,
     Continuous_MountainCarEnv_Sindy,
@@ -159,7 +159,7 @@ if __name__ == "__main__":
 
     # Define file paths
     file_path = "src/data/mountaincar/mountain_car_data.csv"
-    model_save_path = "./results/models/"
+    model_save_path = "./results/models/mountain_car/"
 
     # Train the SAC model
     train_sac_model(file_path, model_save_path)

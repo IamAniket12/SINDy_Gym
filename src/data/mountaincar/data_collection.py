@@ -9,7 +9,7 @@ from stable_baselines3 import SAC
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 )
-from src.environment.custom_gym_envs import (
+from environment.mountain_car import (
     Continuous_MountainCarEnv,
     Continuous_MountainCarEnvWB,
     Continuous_MountainCarEnv_Sindy,
