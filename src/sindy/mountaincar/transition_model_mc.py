@@ -36,9 +36,6 @@ def create_transition_function(
     u = data["action"].values.reshape(-1, 1)  # Action taken
     episode_end = data["done"].values  # Indicates the end of an episode
 
-    # Define the environment (for possible future use)
-    temp = gym.make("MountainCarBB-v0")
-
     # Define SINDy library functions
     functions = [
         lambda x: 1,  # Constant
@@ -177,4 +174,6 @@ def interpret_sindy_model(model):
 if __name__ == "__main__":
     # Example usage
     file_path = "src/data/mountaincar/mountain_car_data.csv"
-    model = create_transition_function(file_path, plot_predictions=True, interpret=True)
+    model = create_transition_function(
+        file_path, plot_predictions=False, interpret=True
+    )
