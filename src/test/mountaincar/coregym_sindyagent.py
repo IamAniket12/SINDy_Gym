@@ -11,10 +11,6 @@ from environment.mountain_car import (
 )
 from src.sindy.mountaincar.transition_model_mc import create_transition_function
 
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-)
-
 
 def run_trained_model_with_sindy(
     file_path, model_path, env_name="MountainCarBB-v0", render_mode="human"

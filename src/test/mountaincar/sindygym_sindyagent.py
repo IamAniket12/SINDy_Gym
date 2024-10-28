@@ -5,10 +5,6 @@ from stable_baselines3 import SAC
 from pysindy.feature_library import *
 from pysindy.differentiation import *
 
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-)
-
 from environment.mountain_car import (
     Continuous_MountainCarEnv,
     Continuous_MountainCarEnvWB,

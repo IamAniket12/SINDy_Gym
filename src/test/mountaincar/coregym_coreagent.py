@@ -5,9 +5,7 @@ from stable_baselines3 import SAC
 from pysindy.feature_library import *
 from pysindy.differentiation import *
 
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-)
+
 # Now you can import from src.environment.custom_gym_envs
 from environment.mountain_car import (
     Continuous_MountainCarEnv,

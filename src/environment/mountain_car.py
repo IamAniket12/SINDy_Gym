@@ -644,7 +644,7 @@ class Continuous_MountainCarEnv_Sindy(gym.Env):
 
 register(
     id="MountainCarBB-v0",
-    entry_point="src.environment.moutaoin_car:Continuous_MountainCarEnv",
+    entry_point="src.environment.mountain_car:Continuous_MountainCarEnv",
     max_episode_steps=1000,
 )
 
