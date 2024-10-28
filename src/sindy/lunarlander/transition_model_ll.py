@@ -56,7 +56,7 @@ def create_transition_function(
         # Use default parameters
         functions = [lambda x: 1, lambda x: x, lambda x: x**2]
         lib = CustomLibrary(library_functions=functions)
-        optimizer = STLSQ(threshold=0.0019, alpha=0.01)
+        optimizer = STLSQ(threshold=0.01, alpha=0.1)
         der = SmoothedFiniteDifference()
         model = SINDy(
             discrete_time=True,

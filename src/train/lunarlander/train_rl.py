@@ -3,64 +3,12 @@ import sys
 import gym
 import wandb
 import numpy as np
-from stable_baselines3 import SAC, PPO
+from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback
 from wandb.integration.sb3 import WandbCallback
-from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
+from stable_baselines3.common.evaluation import evaluate_policy
 from src.sindy.lunarlander.transition_model_ll import create_transition_function
-
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-)
-
-
-class CustomWandbCallback(WandbCallback):
-    """
-    Custom callback to log episode rewards, lengths, and training loss using wandb.
-
-    Args:
-        verbose (int): Verbosity level for the callback (default is 0).
-
-    Methods:
-        _on_step(): Logs the training loss and episode rewards/lengths.
-        _on_rollout_end(): Records the episode reward and length after each rollout.
-    """
-
-    def __init__(self, verbose=0):
-        super(CustomWandbCallback, self).__init__(verbose=verbose, model_save_path=None)
-        self.episode_rewards = []
-        self.episode_lengths = []
-
-    def _on_step(self) -> bool:
-        """
-        Log training loss and episode statistics (reward/length) during training.
-
-        Returns:
-            bool: True if logging was successful.
-        """
-        if len(self.model.logger.name_to_value) > 0:
-            for key, value in self.model.logger.name_to_value.items():
-                wandb.log({key: value}, step=self.num_timesteps)
-
-        if len(self.episode_rewards) > 0:
-            wandb.log(
-                {
-                    "episode_reward": sum(self.episode_rewards)
-                    / len(self.episode_rewards),
-                    "episode_length": sum(self.episode_lengths)
-                    / len(self.episode_lengths),
-                },
-                step=self.num_timesteps,
-            )
-            self.episode_rewards = []
-            self.episode_lengths = []
-
-        return True
-
-    def _on_rollout_end(self):
-        if len(self.model.ep_info_buffer) > 0:
-            self.episode_rewards.append(self.model.ep_info_buffer[-1]["r"])
-            self.episode_lengths.append(self.model.ep_info_buffer[-1]["l"])
+from environment.lunar_lander import LunarLander
 
 
 def initialize_wandb():
@@ -70,32 +18,34 @@ def initialize_wandb():
     Returns:
         run (wandb.run): The initialized wandb run object.
     """
+    config = {
+        "n_envs": 16,
+        "n_timesteps": 1000000,
+        "policy": "MlpPolicy",
+        "n_steps": 1024,
+        "batch_size": 64,
+        "gae_lambda": 0.98,
+        "gamma": 0.999,
+        "n_epochs": 4,
+        "ent_coef": 0.01,
+    }
+
     return wandb.init(
-        project="LunarLander_PPO_Sindy",
-        config={
-            "algorithm": "PPO",
-            "n_envs": 16,
-            "n_timesteps": 1000000,
-            "policy": "MlpPolicy",
-            "n_steps": 1024,
-            "batch_size": 64,
-            "gae_lambda": 0.98,
-            "gamma": 0.999,
-            "n_epochs": 4,
-            "ent_coef": 0.01,
-        },
-        name="LunarLander_PPO_Sindy",
+        project="lunar-lander-ppo-sindy",
+        config=config,
+        sync_tensorboard=True,
+        monitor_gym=True,
     )
 
 
-def train_ppo_model(file_path, model_save_path, total_timesteps=100000):
+def train_ppo_model(file_path, model_save_path, total_timesteps=1000000):
     """
-    Train an SAC model using a custom SINDy model for a MountainCar environment.
+    Train a PPO model using a custom SINDy model for LunarLander environment.
 
     Args:
         file_path (str): Path to the CSV file used for creating the SINDy transition model.
         model_save_path (str): Path to save the trained model.
-        total_timesteps (int): Total number of timesteps for training (default is 100000).
+        total_timesteps (int): Total number of timesteps for training.
     """
     # Create the SINDy model
     sindy_model = create_transition_function(
@@ -105,7 +55,7 @@ def train_ppo_model(file_path, model_save_path, total_timesteps=100000):
     # Create the environment with the SINDy model
     env = gym.make("LunarLander-Sindy-v0", sindy_model=sindy_model)
 
-    # Initialize the SAC model
+    # Initialize the PPO model with wandb config
     model = PPO(
         wandb.config.policy,
         env,
@@ -119,32 +69,48 @@ def train_ppo_model(file_path, model_save_path, total_timesteps=100000):
         tensorboard_log=f"runs/{wandb.run.id}",
     )
 
-    # Create the custom wandb callback
-    custom_wandb_callback = CustomWandbCallback()
+    # Set up the WandbCallback
+    wandb_callback = WandbCallback(
+        model_save_path=f"models/{wandb.run.id}",
+        verbose=2,
+        model_save_freq=10000,
+    )
 
     # Train the model
-    model.learn(total_timesteps=total_timesteps, callback=custom_wandb_callback)
+    model.learn(
+        total_timesteps=int(wandb.config.n_timesteps),
+        callback=wandb_callback,
+        tb_log_name="PPO",
+    )
 
-    # Save the model
-    model.save(os.path.join(model_save_path, "ppo_lunarlander_sindy_v1"))
+    # Save the final model
+    model_name = os.path.join(model_save_path, "ppo-LunarLander-sindy_v2")
+    model.save(model_name)
+
+    # Evaluate the model
+    mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
+    print(f"Mean reward: {mean_reward:.2f} +/- {std_reward:.2f}")
+
+    # Log the final evaluation metrics
+    wandb.log({"eval/mean_reward": mean_reward, "eval/std_reward": std_reward})
 
     # Close the environment
     env.close()
 
 
 if __name__ == "__main__":
-    # Ensure the logs folders exist
-    if not os.path.exists("./logs"):
-        os.makedirs("./logs")
+    # Ensure the logs and models folders exist
+    os.makedirs("./logs", exist_ok=True)
+    os.makedirs("./models", exist_ok=True)
 
     # Initialize wandb
     run = initialize_wandb()
 
     # Define file paths
     file_path = "src/data/lunarlander/lunar_lander_data.csv"
-    model_save_path = "./results/models/mountain_car/"
+    model_save_path = "./results/models/lunar_lander"
 
-    # Train the SAC model
+    # Train the PPO model
     train_ppo_model(file_path, model_save_path)
 
     # Finish the wandb run
