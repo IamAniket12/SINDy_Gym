@@ -332,19 +332,26 @@ def interpret_sindy_model(model):
     Args:
         model (SINDy): The fitted SINDy model to interpret.
     """
+    print("Interpreting the SINDy model")
     functions = [
-        "1",  # f0: constant term
-        "x",  # f1: linear term (position or velocity)
-        "cos(3 * x)",  # f2: nonlinear term
+        "1",
+        "x",
+        "x^2",
+        "x^3",
     ]
-
+    state_vars = ["x_pos", "y_pos", "x_vel", "y_vel", "angle", "angular_vel"]
     # Extract and interpret the model equations
     equations = model.equations()
+    print("EQ", equations)
     for i, eq in enumerate(equations):
-        state_var = "position" if i == 0 else "velocity"
+        state_var = state_vars[i]
         for j, func in enumerate(functions):
-            eq = eq.replace(f"f{j}(x0[k])", f"{func}(position_t)")
-            eq = eq.replace(f"f{j}(x1[k])", f"{func}(velocity_t)")
+            eq = eq.replace(f"f{j}(x0[k])", f"{func}(x_pos_t)")
+            eq = eq.replace(f"f{j}(x1[k])", f"{func}(y_pos_t)")
+            eq = eq.replace(f"f{j}(x2[k])", f"{func}(x_vel_t)")
+            eq = eq.replace(f"f{j}(x3[k])", f"{func}(y_vel_t)")
+            eq = eq.replace(f"f{j}(x4[k])", f"{func}(angle_t)")
+            eq = eq.replace(f"f{j}(x5[k])", f"{func}(angular_vel_t)")
             eq = eq.replace(f"f{j}(u0[k])", "action_t")
 
         print(f"Equation for {state_var}_t+1:\n{eq}\n")
@@ -354,5 +361,5 @@ if __name__ == "__main__":
     # Example usage
     file_path = "src/data/lunarlander/lunar_lander_data.csv"
     model = create_transition_function(
-        file_path, plot_predictions=True, interpret=True, tune_hyperparameters=True
+        file_path, plot_predictions=False, interpret=True, tune_hyperparameters=False
     )
